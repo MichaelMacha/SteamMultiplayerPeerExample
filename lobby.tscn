@@ -78,6 +78,15 @@ offset_right = 341.0
 offset_bottom = 407.5
 text = "Find your public IP address"
 
+[node name="LobbyID" type="LineEdit" parent="Players"]
+layout_mode = 0
+offset_left = 8.5
+offset_top = 228.0
+offset_right = 161.5
+offset_bottom = 259.0
+placeholder_text = "Lobby ID"
+editable = false
+
 [node name="Connect" type="Panel" parent="."]
 layout_mode = 1
 anchors_preset = 8
@@ -94,12 +103,19 @@ grow_vertical = 2
 size_flags_horizontal = 2
 size_flags_vertical = 2
 
+[node name="Persona Name" type="Label" parent="Connect"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 23.0
+grow_horizontal = 2
+
 [node name="NameLabel" type="Label" parent="Connect"]
 layout_mode = 0
 offset_left = 14.0
-offset_top = 11.0
-offset_right = 56.0
-offset_bottom = 25.0
+offset_top = 26.5
+offset_right = 65.0
+offset_bottom = 49.5
 size_flags_horizontal = 2
 size_flags_vertical = 0
 text = "Name:"
@@ -107,9 +123,9 @@ text = "Name:"
 [node name="Name" type="LineEdit" parent="Connect"]
 layout_mode = 0
 offset_left = 17.0
-offset_top = 30.0
+offset_top = 45.5
 offset_right = 173.0
-offset_bottom = 54.0
+offset_bottom = 76.5
 size_flags_horizontal = 2
 size_flags_vertical = 2
 text = "The Warrior"
@@ -117,9 +133,9 @@ text = "The Warrior"
 [node name="IPLabel" type="Label" parent="Connect"]
 layout_mode = 0
 offset_left = 15.0
-offset_top = 66.0
-offset_right = 57.0
-offset_bottom = 80.0
+offset_top = 81.5
+offset_right = 85.0
+offset_bottom = 104.5
 size_flags_horizontal = 2
 size_flags_vertical = 0
 theme_override_font_sizes/font_size = 16
@@ -128,9 +144,9 @@ text = "Lobby id:"
 [node name="IPAddress" type="LineEdit" parent="Connect"]
 layout_mode = 0
 offset_left = 17.0
-offset_top = 85.0
+offset_top = 100.5
 offset_right = 173.0
-offset_bottom = 109.0
+offset_bottom = 131.5
 size_flags_horizontal = 2
 size_flags_vertical = 2
 placeholder_text = "Lobby Id Here"
@@ -138,9 +154,9 @@ placeholder_text = "Lobby Id Here"
 [node name="Host" type="Button" parent="Connect"]
 layout_mode = 0
 offset_left = 181.0
-offset_top = 31.0
+offset_top = 46.5
 offset_right = 246.0
-offset_bottom = 51.0
+offset_bottom = 77.5
 size_flags_horizontal = 2
 size_flags_vertical = 2
 text = "Host"
@@ -148,9 +164,9 @@ text = "Host"
 [node name="Join" type="Button" parent="Connect"]
 layout_mode = 0
 offset_left = 181.0
-offset_top = 87.0
+offset_top = 102.5
 offset_right = 246.0
-offset_bottom = 107.0
+offset_bottom = 133.5
 size_flags_horizontal = 2
 size_flags_vertical = 2
 text = "Join"
@@ -158,9 +174,9 @@ text = "Join"
 [node name="ErrorLabel" type="Label" parent="Connect"]
 layout_mode = 0
 offset_left = 15.0
-offset_top = 125.0
+offset_top = 140.5
 offset_right = 257.0
-offset_bottom = 139.0
+offset_bottom = 163.5
 size_flags_horizontal = 2
 size_flags_vertical = 0
 theme_override_colors/font_color = Color(0.820312, 0.291595, 0.291595, 1)

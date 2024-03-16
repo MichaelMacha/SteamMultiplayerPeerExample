@@ -8,14 +8,17 @@ const DEFAULT_PORT = 10567
 # Max number of players.
 const MAX_PEERS = 12
 
-var peer = null
+var peer : MultiplayerPeer = null
 
 # Name for my player.
-var player_name = "The Warrior"
+var player_name := "The Warrior"
 
 # Names for remote players in id:name format.
-var players = {}
-var players_ready = []
+var players := {}
+## Issue: I don't see any reason why the host couldn't also be in here, and it
+## seems like it could simplify code.
+
+var players_ready := []
 
 var lobby_id := -1
 
@@ -24,12 +27,10 @@ signal player_list_changed()
 signal connection_failed()
 signal connection_succeeded()
 signal game_ended()
-signal game_error(what)
+signal game_error(what : String)
 
-
-func _process(delta):
+func _process(_delta : float):
 	Steam.run_callbacks()
-
 
 # Callback from SceneTree.
 func _player_connected(id):
@@ -62,13 +63,15 @@ func _server_disconnected():
 
 # Callback from SceneTree, only for clients (not server).
 func _connected_fail():
-	multiplayer.set_network_peer(null) # Remove peer
+	multiplayer.multiplayer_peer = null
+	#multiplayer.set_network_peer(null) # Remove peer
 	connection_failed.emit()
 
 
 # Lobby management functions.
 @rpc("any_peer")
-func register_player(new_player_name):
+func register_player(new_player_name : String):
+	print("registering player")
 	var id = multiplayer.get_remote_sender_id()
 	players[id] = new_player_name
 	player_list_changed.emit()
@@ -77,7 +80,7 @@ func register_player(new_player_name):
 func unregister_player(id):
 	players.erase(id)
 	player_list_changed.emit()
-
+	
 
 @rpc("call_local")
 func load_world():
@@ -87,20 +90,21 @@ func load_world():
 	get_tree().get_root().get_node("Lobby").hide()
 
 	# Set up score.
-	world.get_node("Score").add_player(multiplayer.get_unique_id(), player_name)
-	for pn in players:
-		world.get_node("Score").add_player(pn, players[pn])
+	#world.get_node("Score").add_player(multiplayer.get_unique_id(), player_name)
+	for player in players:
+		world.get_node("Score").add_player(player, players[player])
 	get_tree().set_pause(false) # Unpause and unleash the game!
 
 
-func host_game(new_player_name):
+func host_game(new_player_name : String):
 	player_name = new_player_name
+	players[1] = new_player_name
 	Steam.createLobby(Steam.LOBBY_TYPE_PUBLIC, MAX_PEERS)
 
 
-func join_game(lobby_id, new_player_name):
+func join_game(new_lobby_id : int, new_player_name : String):
 	player_name = new_player_name
-	Steam.joinLobby(int(lobby_id))
+	Steam.joinLobby(new_lobby_id)
 
 
 func get_player_list():
@@ -110,30 +114,56 @@ func get_player_list():
 func get_player_name():
 	return player_name
 
-
-func begin_game():
+func begin_game2():
+	#Ensure that this is only running on the server
 	assert(multiplayer.is_server())
+	
+	#call load_world on all clients
 	load_world.rpc()
-
-	var world = get_tree().get_root().get_node("World")
-	var player_scene = load("res://player.tscn")
-
-	# Create a dictionary with peer id and respective spawn points, could be improved by randomizing.
-	var spawn_points = {}
-	spawn_points[1] = 0 # Server in spawn point 0.
-	var spawn_point_idx = 1
-	for p in players:
-		spawn_points[p] = spawn_point_idx
-		spawn_point_idx += 1
-
-	for p_id in spawn_points:
-		var spawn_pos = world.get_node("SpawnPoints/" + str(spawn_points[p_id])).position
-		var player = player_scene.instantiate()
-		player.synced_position = spawn_pos
-		player.name = str(p_id)
-		player.set_player_name(player_name if p_id == multiplayer.get_unique_id() else players[p_id])
+	
+	#grab the world node and player scene
+	var world : Node2D = get_tree().get_root().get_node("World")
+	var player_scene := load("res://player.tscn")
+	
+	# A more concise way to do this would be to have a version of `players` which
+	# includes the host, too.
+	var all_players = players.duplicate()
+	#all_players[1] = player_name
+	
+	#Iterate over our connected peer ids
+	var index = 0
+	for peer_id in all_players:
+		print("peer_id == ", peer_id)
+		var player : CharacterBody2D = player_scene.instantiate()
+		player.synced_position = \
+			world.get_node("SpawnPoints").get_child(index).position
+		player.name = str(peer_id)
+		player.set_player_name(all_players[peer_id])
 		world.get_node("Players").add_child(player)
-
+		index += 1
+	
+#func begin_game():
+	#assert(multiplayer.is_server())
+	#load_world.rpc()
+#
+	#var world = get_tree().get_root().get_node("World")
+	#var player_scene = load("res://player.tscn")
+#
+	## Create a dictionary with peer id and respective spawn points, could be improved by randomizing.
+	#var spawn_points = {}
+	#spawn_points[1] = 0 # Server in spawn point 0.
+	#var spawn_point_idx = 1
+	#for p in players:
+		#spawn_points[p] = spawn_point_idx
+		#spawn_point_idx += 1
+#
+	#for p_id in spawn_points:
+		#var spawn_pos = world.get_node("SpawnPoints/" + str(spawn_points[p_id])).position
+		#var player = player_scene.instantiate()
+		#player.synced_position = spawn_pos
+		#player.name = str(p_id)
+		#player.set_player_name(player_name if p_id == multiplayer.get_unique_id() else players[p_id])
+		#world.get_node("Players").add_child(player)
 
 func end_game():
 	if has_node("/root/World"): # Game is in progress.
@@ -145,27 +175,29 @@ func end_game():
 
 
 func _ready():
-	Steam.steamInit(480)
+	Steam.steamInitEx(true, 480)
+	
 	multiplayer.peer_connected.connect(self._player_connected)
 	multiplayer.peer_disconnected.connect(self._player_disconnected)
 	multiplayer.connected_to_server.connect(self._connected_ok)
 	multiplayer.connection_failed.connect(self._connected_fail)
 	multiplayer.server_disconnected.connect(self._server_disconnected)
-	Steam.lobby_joined.connect(_on_lobby_joined.bind())
-	Steam.lobby_created.connect(_on_lobby_created.bind())
+	#Steam.lobby_joined.connect(_on_lobby_joined.bind())
+	#Steam.lobby_created.connect(_on_lobby_created.bind())
+	Steam.lobby_joined.connect(_on_lobby_joined)
+	Steam.lobby_created.connect(_on_lobby_created)
 
-
-func _on_lobby_created(_connect: int, _lobby_id: int):
-	if _connect == 1:
-		lobby_id = _lobby_id
-		Steam.setLobbyData(_lobby_id, "name", "test_server")
+func _on_lobby_created(status: int, new_lobby_id: int):
+	if status == 1:
+		lobby_id = new_lobby_id
+		Steam.setLobbyData(new_lobby_id, "name", "test_server")
 		create_socket()
 		print("Create lobby id:",str(lobby_id))
 	else:
 		print("Error on create lobby!")
 
 
-func _on_lobby_joined(lobby: int, permissions: int, locked: bool, response: int):
+func _on_lobby_joined(lobby: int, _permissions: int, _locked: bool, response: int):
 	if response == 1:
 		var id = Steam.getLobbyOwner(lobby)
 		if id != Steam.getSteamID():
@@ -188,11 +220,9 @@ func _on_lobby_joined(lobby: int, permissions: int, locked: bool, response: int)
 
 
 func create_socket():
-	print("test")
 	peer = SteamMultiplayerPeer.new()
 	peer.create_host(0, [])
 	multiplayer.set_multiplayer_peer(peer)
-
 
 func connect_socket(steam_id : int):
 	peer = SteamMultiplayerPeer.new()

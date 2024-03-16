@@ -1,6 +1,8 @@
 extends Control
 
 func _ready():
+	$"Connect/Persona Name".text = Steam.getPersonaName()
+	
 	# Called every time the node is added to the scene.
 	gamestate.connection_failed.connect(self._on_connection_failed)
 	gamestate.connection_succeeded.connect(self._on_connection_success)
@@ -11,7 +13,10 @@ func _ready():
 	if OS.has_environment("USERNAME"):
 		$Connect/Name.text = OS.get_environment("USERNAME")
 	else:
-		var desktop_path = OS.get_system_dir(0).replace("\\", "/").split("/")
+		#var desktop_path = OS.get_system_dir(0).replace("\\", "/").split("/")
+		var desktop_path = OS \
+			.get_system_dir(OS.SYSTEM_DIR_DESKTOP) \
+			.replace("\\", "/").split("/")
 		$Connect/Name.text = desktop_path[desktop_path.size() - 2]
 
 
@@ -34,7 +39,7 @@ func _on_join_pressed():
 		$Connect/ErrorLabel.text = "Invalid name!"
 		return
 
-	var ip = $Connect/IPAddress.text
+	var ip : int = int($Connect/IPAddress.text)
 
 	$Connect/ErrorLabel.text = ""
 	$Connect/Host.disabled = true
@@ -74,14 +79,17 @@ func refresh_lobby():
 	var players = gamestate.get_player_list()
 	players.sort()
 	$Players/List.clear()
-	$Players/List.add_item(gamestate.get_player_name() + " (You)")
-	for p in players:
-		$Players/List.add_item(p)
+	for player_name in players:
+		var name : String = player_name
+		if player_name == gamestate.get_player_name():
+			player_name += " (You)"
+		$Players/List.add_item(player_name)
 
 	$Players/Start.disabled = not multiplayer.is_server()
 	$Players/FindPublicIP.text = "loading lobby id..."
 	await get_tree().create_timer(1).timeout
 	$Players/FindPublicIP.text = str(gamestate.lobby_id)
-
+	$Players/LobbyID.text = str(gamestate.lobby_id)
+	
 func _on_start_pressed():
-	gamestate.begin_game()
+	gamestate.begin_game2()

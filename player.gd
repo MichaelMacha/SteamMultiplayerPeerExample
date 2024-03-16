@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-const MOTION_SPEED = 90.0
+const MOTION_SPEED = 180.0
 const BOMB_RATE = 0.5
 
 @export
