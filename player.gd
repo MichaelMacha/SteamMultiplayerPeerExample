@@ -4,10 +4,9 @@ const MOTION_SPEED = 180.0
 const BOMB_RATE = 0.5
 
 @export
-var synced_position := Vector2()
-
-@export
 var stunned = false
+
+@export var synced_position : Vector2
 
 @onready
 var inputs = $Inputs
@@ -16,7 +15,6 @@ var current_anim = ""
 
 func _ready():
 	stunned = false
-	position = synced_position
 	if str(name).is_valid_int():
 		get_node("Inputs/InputsSync").set_multiplayer_authority(str(name).to_int())
 
@@ -28,16 +26,12 @@ func _physics_process(delta):
 
 	if multiplayer.multiplayer_peer == null or is_multiplayer_authority():
 		# The server updates the position that will be notified to the clients.
-		synced_position = position
 		# And increase the bomb cooldown spawning one if the client wants to.
 		last_bomb_time += delta
 		if not stunned and is_multiplayer_authority() and inputs.bombing and last_bomb_time >= BOMB_RATE:
 			last_bomb_time = 0.0
 			get_node("../../BombSpawner").spawn([position, str(name).to_int()])
-	else:
-		# The client simply updates the position to the last known one.
-		position = synced_position
-
+	
 	if not stunned:
 		# Everybody runs physics. I.e. clients tries to predict where they will be during the next frame.
 		velocity = inputs.motion * MOTION_SPEED

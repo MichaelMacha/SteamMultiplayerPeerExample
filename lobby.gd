@@ -76,7 +76,7 @@ func _on_game_error(errtxt):
 
 
 func refresh_lobby():
-	var players = gamestate.get_player_list()
+	var players = gamestate.players.values()
 	players.sort()
 	$Players/List.clear()
 	for player_name in players:
@@ -92,4 +92,4 @@ func refresh_lobby():
 	$Players/LobbyID.text = str(gamestate.lobby_id)
 	
 func _on_start_pressed():
-	gamestate.begin_game2()
+	gamestate.begin_game()

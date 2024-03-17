@@ -1,6 +1,6 @@
 extends HBoxContainer
 
-var player_labels = {}
+var player_labels = {} # id : int to {name, label}
 
 func _process(_delta):
 	var rocks_left = $"../Rocks".get_child_count()
@@ -16,7 +16,10 @@ func _process(_delta):
 		$"../Winner".show()
 
 
-func increase_score(for_who):
+func increase_score(for_who : int):
+	if not for_who in player_labels:
+		print(for_who, " is not in labels.")
+		print("Player Labels: ", player_labels)
 	assert(for_who in player_labels)
 	var pl = player_labels[for_who]
 	pl.score += 1
