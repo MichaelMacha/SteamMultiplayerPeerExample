@@ -14,6 +14,7 @@ var last_bomb_time = BOMB_RATE
 var current_anim = ""
 
 func _ready():
+	print("Original Player spawned")
 	stunned = false
 	if str(name).is_valid_int():
 		get_node("Inputs/InputsSync").set_multiplayer_authority(str(name).to_int())
