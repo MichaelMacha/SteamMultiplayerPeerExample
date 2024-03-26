@@ -49,7 +49,7 @@ func _setup_ui():
 					func():
 						steam_connect.hide()
 						steam_players.show()
-						gamestate.join_game(
+						gamestate.join_lobby(
 							sample,
 							player_name.text)
 				)
@@ -67,7 +67,8 @@ func _request_lobby_list():
 func _on_host_pressed():
 	steam_connect.hide()
 	steam_players.show()
-	gamestate.host_game(player_name.text)
+	gamestate.host_lobby(player_name.text)
+	#gamestate.host_game(player_name.text)
 	refresh_lobby()
 
 func _on_connection_success():

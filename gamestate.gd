@@ -147,22 +147,27 @@ func load_world():
 		#world.get_node("Score").add_player(player, players[player])
 	get_tree().set_pause(false) # Unpause and unleash the game!
 
-func host_game(new_player_name : String):
+#region Lobbies
+
+func host_lobby(new_player_name : String):
 	player_name = new_player_name
 	players[1] = new_player_name
 	Steam.createLobby(Steam.LOBBY_TYPE_PUBLIC, MAX_PEERS)
 
 
-func join_game(new_lobby_id : int, new_player_name : String):
+func join_lobby(new_lobby_id : int, new_player_name : String):
 	player_name = new_player_name
 	print("Multiplayer ID in join_game: ", multiplayer.get_unique_id())
 	Steam.joinLobby(new_lobby_id)
+
+#endregion
 
 func get_player_name():
 	return player_name
 
 func begin_game():
-	#Ensure that this is only running on the server
+	#Ensure that this is only running on the server; if it isn't, we need
+	#to check our code.
 	assert(multiplayer.is_server())
 	
 	#call load_world on all clients
