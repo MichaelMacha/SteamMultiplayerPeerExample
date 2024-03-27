@@ -76,9 +76,9 @@ func _ready():
 			var id = Steam.getLobbyOwner(new_lobby_id)
 			if id != Steam.getSteamID():
 				connect_socket(id)
-			add_player.rpc(multiplayer.get_unique_id(), player_name)
-			#players[multiplayer.get_unique_id()] = player_name
-			print("Multiplayer ID in lobby_joined: ", multiplayer.get_unique_id())
+				register_player.rpc(player_name)
+				players[multiplayer.get_unique_id()] = player_name
+				print("Multiplayer ID in lobby_joined: ", multiplayer.get_unique_id())
 		else:
 			# Get the failure reason
 			var FAIL_REASON: String
@@ -114,7 +114,7 @@ func is_game_in_progress() -> bool:
 	return has_node("/root/World")
 
 # Lobby management functions.
-@rpc("any_peer")
+@rpc("call_local", "any_peer")
 func register_player(new_player_name : String):
 	print("registering player : {", multiplayer.get_remote_sender_id(),
 		", ", new_player_name, "}")
@@ -128,10 +128,10 @@ func unregister_player(id):
 	player_list_changed.emit()
 	
 
-@rpc("call_local", "any_peer")
-func add_player(id : int, player_name : String):
-	players[id] = player_name
-	#$"/root/World/Score".add_player(id, player_name)
+#@rpc("call_local", "any_peer")
+#func add_player(id : int, player_name : String):
+	#players[id] = player_name
+	##$"/root/World/Score".add_player(id, player_name)
 
 @rpc("call_local")
 func load_world():
@@ -231,5 +231,5 @@ func create_enet_client(new_player_name : String, address : String):
 	(peer as ENetMultiplayerPeer).create_client(address, DEFAULT_PORT)
 	multiplayer.set_multiplayer_peer(peer)
 	await multiplayer.connected_to_server
-	add_player.rpc(multiplayer.get_unique_id(), player_name)
+	register_player.rpc(player_name)
 	print("Client created, multiplayer peer: ", multiplayer.multiplayer_peer)

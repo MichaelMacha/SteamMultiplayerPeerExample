@@ -42,6 +42,7 @@ func add_player(id, new_player_name):
 func _ready():
 	print("From score: ", gamestate.players)
 	for player in gamestate.players:
+		#TODO: Does not seem to be called for client?
 		add_player(player, gamestate.players[player])
 		print("Player detected of name: \"", gamestate.players[player], "\"")
 	$"../Winner".hide()

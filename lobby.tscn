@@ -191,6 +191,7 @@ size_flags_horizontal = 3
 layout_mode = 2
 
 [node name="ENet" type="Control" parent="TabContainer"]
+visible = false
 layout_mode = 2
 
 [node name="Players" type="PanelContainer" parent="TabContainer/ENet"]
