@@ -36,12 +36,7 @@ func _ready():
 	
 	multiplayer.peer_connected.connect(
 		func(id : int):
-			print("Peer connected")
 			# Tell the connected peer that we have also joined
-			
-			#TODO: This should come from the text field
-			if player_name == null or player_name == "":
-				player_name = "Empty String " + str(randi())
 			register_player.rpc_id(id, player_name)
 	)
 	multiplayer.peer_disconnected.connect(
@@ -72,28 +67,37 @@ func _ready():
 	
 	Steam.lobby_joined.connect(
 		func (new_lobby_id: int, _permissions: int, _locked: bool, response: int):
-		if response == 1:
+		if response == Steam.CHAT_ROOM_ENTER_RESPONSE_SUCCESS:
 			lobby_id = new_lobby_id
 			var id = Steam.getLobbyOwner(new_lobby_id)
 			if id != Steam.getSteamID():
 				connect_socket(id)
 				register_player.rpc(player_name)
 				players[multiplayer.get_unique_id()] = player_name
-				print("Multiplayer ID in lobby_joined: ", multiplayer.get_unique_id())
 		else:
 			# Get the failure reason
 			var FAIL_REASON: String
 			match response:
-				2:  FAIL_REASON = "This lobby no longer exists."
-				3:  FAIL_REASON = "You don't have permission to join this lobby."
-				4:  FAIL_REASON = "The lobby is now full."
-				5:  FAIL_REASON = "Uh... something unexpected happened!"
-				6:  FAIL_REASON = "You are banned from this lobby."
-				7:  FAIL_REASON = "You cannot join due to having a limited account."
-				8:  FAIL_REASON = "This lobby is locked or disabled."
-				9:  FAIL_REASON = "This lobby is community locked."
-				10: FAIL_REASON = "A user in the lobby has blocked you from joining."
-				11: FAIL_REASON = "A user you have blocked is in the lobby."
+				Steam.CHAT_ROOM_ENTER_RESPONSE_DOESNT_EXIST:
+					FAIL_REASON = "This lobby no longer exists."
+				Steam.CHAT_ROOM_ENTER_RESPONSE_NOT_ALLOWED:
+					FAIL_REASON = "You don't have permission to join this lobby."
+				Steam.CHAT_ROOM_ENTER_RESPONSE_FULL:
+					FAIL_REASON = "The lobby is now full."
+				Steam.CHAT_ROOM_ENTER_RESPONSE_ERROR:
+					FAIL_REASON = "Uh... something unexpected happened!"
+				Steam.CHAT_ROOM_ENTER_RESPONSE_BANNED:
+					FAIL_REASON = "You are banned from this lobby."
+				Steam.CHAT_ROOM_ENTER_RESPONSE_LIMITED:
+					FAIL_REASON = "You cannot join due to having a limited account."
+				Steam.CHAT_ROOM_ENTER_RESPONSE_CLAN_DISABLED:
+					FAIL_REASON = "This lobby is locked or disabled."
+				Steam.CHAT_ROOM_ENTER_RESPONSE_COMMUNITY_BAN:
+					FAIL_REASON = "This lobby is community locked."
+				Steam.CHAT_ROOM_ENTER_RESPONSE_MEMBER_BLOCKED_YOU:
+					FAIL_REASON = "A user in the lobby has blocked you from joining."
+				Steam.CHAT_ROOM_ENTER_RESPONSE_YOU_BLOCKED_MEMBER:
+					FAIL_REASON = "A user you have blocked is in the lobby."
 			print(FAIL_REASON)
 	)
 	Steam.lobby_created.connect(
@@ -103,16 +107,12 @@ func _ready():
 				Steam.setLobbyData(new_lobby_id, "name", 
 					str(Steam.getPersonaName(), "'s Spectabulous Test Server"))
 				create_socket()
-				print("Create lobby id:",str(lobby_id))
 			else:
 				print("Error on create lobby!")
 	)
 
 func _process(_delta : float):
 	Steam.run_callbacks()
-
-func is_game_in_progress() -> bool:
-	return has_node("/root/World")
 
 # Lobby management functions.
 @rpc("call_local", "any_peer")
@@ -141,11 +141,6 @@ func load_world():
 	get_tree().get_root().add_child(world)
 	get_tree().get_root().get_node("Lobby").hide()
 
-	# Set up score.
-	print("Players: ", players)
-	for player in players:
-		print("ADDING PLAYER: ", player, ": ", players[player])
-		#world.get_node("Score").add_player(player, players[player])
 	get_tree().set_pause(false) # Unpause and unleash the game!
 
 #region Lobbies
@@ -158,7 +153,6 @@ func host_lobby(new_player_name : String):
 
 func join_lobby(new_lobby_id : int, new_player_name : String):
 	player_name = new_player_name
-	print("Multiplayer ID in join_game: ", multiplayer.get_unique_id())
 	Steam.joinLobby(new_lobby_id)
 
 #endregion
@@ -195,13 +189,6 @@ func begin_game():
 		
 		spawn_index += 1
 	
-func end_game():
-	if is_game_in_progress():
-		get_node("/root/World").queue_free()
-	
-	game_ended.emit()
-	players.clear()
-
 # create_socket and connect_socket both create the multiplayer peer, instead
 # of _ready, for the sake of compatibility with other networking services
 # such as WebSocket, WebRTC, or Steam or Epic.
@@ -217,25 +204,19 @@ func connect_socket(steam_id : int):
 	multiplayer.set_multiplayer_peer(peer)
 
 func create_enet_host(new_player_name : String):
-	print("Creating host on ENet...")
 	peer = ENetMultiplayerPeer.new()
 	(peer as ENetMultiplayerPeer).create_server(DEFAULT_PORT)
 	player_name = new_player_name
 	players[1] = new_player_name
-	#multiplayer.peer_connected.connect(...)
 	multiplayer.set_multiplayer_peer(peer)
-	print("Host created, multiplayer peer: ", multiplayer.multiplayer_peer)
 
 func create_enet_client(new_player_name : String, address : String):
-	print("Creating client on ENet, IP ", address, "...")
 	peer = ENetMultiplayerPeer.new()
 	(peer as ENetMultiplayerPeer).create_client(address, DEFAULT_PORT)
 	multiplayer.set_multiplayer_peer(peer)
 	await multiplayer.connected_to_server
-	print("Create ENet Client name: ", new_player_name)
 	register_player.rpc(new_player_name)
 	players[multiplayer.get_unique_id()] = new_player_name
-	print("Client created, multiplayer peer: ", multiplayer.multiplayer_peer)
 
 #region Utility
 
@@ -250,5 +231,15 @@ func _make_string_unique(name : String) -> String:
 @rpc("call_local", "any_peer")
 func get_player_name() -> String:
 	return players[multiplayer.get_remote_sender_id()]
+
+func is_game_in_progress() -> bool:
+	return has_node("/root/World")
+
+func end_game():
+	if is_game_in_progress():
+		get_node("/root/World").queue_free()
+	
+	game_ended.emit()
+	players.clear()
 
 #endregion

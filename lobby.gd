@@ -28,8 +28,6 @@ func _ready():
 	_setup_ui()
 
 func _setup_ui():
-	print("Setting up UI")
-	
 	#Should be customizable, ultimately
 	Steam.addRequestLobbyListDistanceFilter(Steam.LOBBY_DISTANCE_FILTER_CLOSE)
 	
@@ -116,15 +114,12 @@ func _on_start_pressed():
 	gamestate.begin_game()
 
 func _on_enet_host_pressed():
-	print("ENet Host Pressed")
 	gamestate.create_enet_host(player_name.text)
 	
 	#Issue: player isn't being added to `players` list
 	enet_start_button.disabled = false
 
 func _on_enet_join_pressed():
-	print("ENet Join Pressed")
-	print("Player name text: ", player_name.text)
 	gamestate.player_name = player_name.text
 	gamestate.create_enet_client(
 		gamestate.player_name,
