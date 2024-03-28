@@ -39,8 +39,9 @@ func _ready():
 			print("Peer connected")
 			# Tell the connected peer that we have also joined
 			
+			#TODO: This should come from the text field
 			if player_name == null or player_name == "":
-				player_name = str(randi())
+				player_name = "Empty String " + str(randi())
 			register_player.rpc_id(id, player_name)
 	)
 	multiplayer.peer_disconnected.connect(
@@ -119,7 +120,7 @@ func register_player(new_player_name : String):
 	print("registering player : {", multiplayer.get_remote_sender_id(),
 		", ", new_player_name, "}")
 	var id = multiplayer.get_remote_sender_id()
-	players[id] = new_player_name
+	players[id] = _make_string_unique(new_player_name)
 	player_list_changed.emit()
 
 
@@ -162,8 +163,8 @@ func join_lobby(new_lobby_id : int, new_player_name : String):
 
 #endregion
 
-func get_player_name():
-	return player_name
+#func get_player_name():
+	#return player_name
 
 func begin_game():
 	#Ensure that this is only running on the server; if it isn't, we need
@@ -231,5 +232,23 @@ func create_enet_client(new_player_name : String, address : String):
 	(peer as ENetMultiplayerPeer).create_client(address, DEFAULT_PORT)
 	multiplayer.set_multiplayer_peer(peer)
 	await multiplayer.connected_to_server
-	register_player.rpc(player_name)
+	print("Create ENet Client name: ", new_player_name)
+	register_player.rpc(new_player_name)
+	players[multiplayer.get_unique_id()] = new_player_name
 	print("Client created, multiplayer peer: ", multiplayer.multiplayer_peer)
+
+#region Utility
+
+func _make_string_unique(name : String) -> String:
+	var count := 2
+	var trial := name
+	if gamestate.players.values().has(trial):
+		trial = name + ' ' + str(count)
+		count += 1
+	return trial
+
+@rpc("call_local", "any_peer")
+func get_player_name() -> String:
+	return players[multiplayer.get_remote_sender_id()]
+
+#endregion

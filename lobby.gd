@@ -99,11 +99,12 @@ func refresh_lobby():
 	players.sort()
 	steam_players.get_node("List").clear()
 	for player_name in players:
-		var this_name : String = player_name
-		if player_name == gamestate.get_player_name():
-			this_name += " (You)"
-		steam_players.get_node("List").add_item(this_name)
-
+		steam_players.get_node("List").add_item(
+			player_name if 
+				player_name != gamestate.player_name else 
+				(player_name + " (You)")
+		)
+	
 	steam_players.get_node("Start").disabled = not multiplayer.is_server()
 	#Ensure we have an actual lobby ID before continuing
 	await Steam.lobby_joined
@@ -123,7 +124,9 @@ func _on_enet_host_pressed():
 
 func _on_enet_join_pressed():
 	print("ENet Join Pressed")
+	print("Player name text: ", player_name.text)
+	gamestate.player_name = player_name.text
 	gamestate.create_enet_client(
-		player_name.text,
+		gamestate.player_name,
 		"127.0.0.1" if enet_address_entry.text.is_empty()
 		else enet_address_entry.text)
