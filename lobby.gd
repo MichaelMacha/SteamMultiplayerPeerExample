@@ -12,6 +12,8 @@ extends Control
 @export var enet_address_entry : LineEdit
 @export var enet_start_button : Button
 
+signal game_log(what : String)
+
 func _ready():
 	persona_name.text = Steam.getPersonaName()
 	
@@ -21,9 +23,12 @@ func _ready():
 	gamestate.player_list_changed.connect(self.refresh_lobby)
 	gamestate.game_ended.connect(self._on_game_ended)
 	gamestate.game_error.connect(self._on_game_error)
+	gamestate.game_log.connect(self._on_game_log)
 	
 	# Set player name to Steam username.
 	player_name.text = Steam.getPersonaName()
+	
+	game_log.connect(self._on_game_log)
 	
 	_setup_ui()
 
@@ -86,10 +91,13 @@ func _on_game_ended():
 	host.disabled = false
 
 
-func _on_game_error(errtxt):
+func _on_game_error(errtxt : String):
 	$ErrorDialog.dialog_text = errtxt
 	$ErrorDialog.popup_centered()
 	host.disabled = false
+
+func _on_game_log(logtxt : String):
+	print(logtxt)
 
 
 func refresh_lobby():

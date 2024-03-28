@@ -26,6 +26,7 @@ signal connection_failed()
 signal connection_succeeded()
 signal game_ended()
 signal game_error(what : String)
+signal game_log(what : String)
 
 func _ready():
 	Steam.steamInitEx(true, 480)
@@ -98,7 +99,7 @@ func _ready():
 					FAIL_REASON = "A user in the lobby has blocked you from joining."
 				Steam.CHAT_ROOM_ENTER_RESPONSE_YOU_BLOCKED_MEMBER:
 					FAIL_REASON = "A user you have blocked is in the lobby."
-			print(FAIL_REASON)
+			game_log.emit(FAIL_REASON)
 	)
 	Steam.lobby_created.connect(
 		func(status: int, new_lobby_id: int):
@@ -108,7 +109,7 @@ func _ready():
 					str(Steam.getPersonaName(), "'s Spectabulous Test Server"))
 				create_socket()
 			else:
-				print("Error on create lobby!")
+				game_error.emit("Error on create lobby!")
 	)
 
 func _process(_delta : float):
@@ -117,8 +118,6 @@ func _process(_delta : float):
 # Lobby management functions.
 @rpc("call_local", "any_peer")
 func register_player(new_player_name : String):
-	print("registering player : {", multiplayer.get_remote_sender_id(),
-		", ", new_player_name, "}")
 	var id = multiplayer.get_remote_sender_id()
 	players[id] = _make_string_unique(new_player_name)
 	player_list_changed.emit()

@@ -17,9 +17,6 @@ func _process(_delta):
 
 
 func increase_score(for_who : int):
-	if not for_who in player_labels:
-		print(for_who, " is not in labels.")
-		print("Player Labels: ", player_labels)
 	assert(for_who in player_labels)
 	var pl = player_labels[for_who]
 	pl.score += 1
@@ -40,11 +37,9 @@ func add_player(id, new_player_name):
 
 
 func _ready():
-	print("From score: ", gamestate.players)
 	for player in gamestate.players:
 		#TODO: Does not seem to be called for client?
 		add_player(player, gamestate.players[player])
-		print("Player detected of name: \"", gamestate.players[player], "\"")
 	$"../Winner".hide()
 	set_process(true)
 
