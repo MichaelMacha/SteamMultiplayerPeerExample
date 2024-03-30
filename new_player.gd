@@ -12,7 +12,7 @@ func _ready():
 	set_multiplayer_authority(str(name).to_int())
 
 func _physics_process(_delta : float):
-	var spawner = get_node("../../BombSpawner")
+	#var spawner = get_node("../../BombSpawner")
 	#TODO: This could still be better— it's two string conversions
 	# per physics update. It might be better to store the peer ID
 	# in a local, synchronized field.
@@ -44,7 +44,7 @@ func _physics_process(_delta : float):
 @rpc("any_peer", "call_local")
 func drop_bomb(data : Array) -> void:
 	var spawner = get_node("../../BombSpawner")
-	spawner.spawn([position, str(name).to_int()])
+	spawner.spawn(data)
 
 func _handle_animation():
 	var player : AnimationPlayer = $AnimationPlayer
@@ -65,6 +65,12 @@ func _handle_animation():
 func set_player_name(value : String):
 	$Label.text = value
 
-@rpc("call_local")
+@rpc("any_peer", "call_local")
 func exploded(_by_who):
+	#If we're already stunned, ignore
+	if stunned:
+		return
+	
+	#Otherwise, stun us
 	stunned = true
+	$AnimationPlayer.play("stunned")
