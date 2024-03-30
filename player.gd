@@ -21,17 +21,24 @@ func _ready():
 
 
 func _physics_process(delta):
-	if multiplayer.multiplayer_peer == null or str(multiplayer.get_unique_id()) == str(name):
+	var spawner = get_node("../../BombSpawner")
+	
+	#print("Multiplayer Peer: ", multiplayer.multiplayer_peer)
+	#if multiplayer.multiplayer_peer == null or str(multiplayer.get_unique_id()) == str(name):
+	if str(multiplayer.get_unique_id()) == str(name):
 		# The client which this player represent will update the controls state, and notify it to everyone.
 		inputs.update()
 
-	if multiplayer.multiplayer_peer == null or is_multiplayer_authority():
+	#if multiplayer.multiplayer_peer == null or is_multiplayer_authority():
+	if is_multiplayer_authority():
 		# The server updates the position that will be notified to the clients.
 		# And increase the bomb cooldown spawning one if the client wants to.
 		last_bomb_time += delta
-		if not stunned and is_multiplayer_authority() and inputs.bombing and last_bomb_time >= BOMB_RATE:
+		#if not stunned and is_multiplayer_authority() and inputs.bombing and last_bomb_time >= BOMB_RATE:
+		if not stunned and inputs.bombing and last_bomb_time >= BOMB_RATE:
 			last_bomb_time = 0.0
-			get_node("../../BombSpawner").spawn([position, str(name).to_int()])
+			#var spawner = get_node("../../BombSpawner")
+			spawner.spawn([position, str(name).to_int()])
 	
 	if not stunned:
 		# Everybody runs physics. I.e. clients tries to predict where they will be during the next frame.

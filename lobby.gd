@@ -104,11 +104,11 @@ func refresh_lobby():
 	var players = gamestate.players.values()
 	players.sort()
 	steam_players.get_node("List").clear()
-	for player_name in players:
+	for sample_name in players:
 		steam_players.get_node("List").add_item(
-			player_name if 
-				player_name != gamestate.player_name else 
-				(player_name + " (You)")
+			sample_name if 
+				sample_name != gamestate.player_name else 
+				(sample_name + " (You)")
 		)
 	
 	steam_players.get_node("Start").disabled = not multiplayer.is_server()

@@ -4,11 +4,15 @@ extends CharacterBody2D
 
 const SPEED = 300.0
 
+func _enter_tree():
+	#I still don't like using the name to keep the peer ID. This should be sync'ed.
+	set_multiplayer_authority(str(name).to_int())
+
 func _ready():
 	set_multiplayer_authority(str(name).to_int())
-	print("New Player Spawned")
 
-func _physics_process(_delta):
+func _physics_process(_delta : float):
+	var spawner = get_node("../../BombSpawner")
 	#TODO: This could still be better— it's two string conversions
 	# per physics update. It might be better to store the peer ID
 	# in a local, synchronized field.
@@ -31,11 +35,16 @@ func _physics_process(_delta):
 		
 		#Handle bombs
 		if Input.is_action_just_pressed("set_bomb"):
-			get_node("../../BombSpawner").spawn([position, str(name).to_int()])
+			drop_bomb.rpc_id(1, [position, str(name).to_int()])
 	
 	_handle_animation()
 	
 	move_and_slide()
+
+@rpc("any_peer", "call_local")
+func drop_bomb(data : Array) -> void:
+	var spawner = get_node("../../BombSpawner")
+	spawner.spawn([position, str(name).to_int()])
 
 func _handle_animation():
 	var player : AnimationPlayer = $AnimationPlayer
@@ -51,8 +60,6 @@ func _handle_animation():
 		else:
 			player.play("standing")
 	elif $AnimationPlayer.current_animation != "stunned":
-		print("Stunned ", Time.get_ticks_msec())
-		print($AnimationPlayer.current_animation)
 		player.play("stunned")
 	
 func set_player_name(value : String):

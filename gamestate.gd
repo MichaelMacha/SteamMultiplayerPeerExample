@@ -169,22 +169,24 @@ func begin_game():
 	
 	#grab the world node and player scene
 	var world : Node2D = get_tree().get_root().get_node("World")
-	var player_scene := load("res://player.tscn")
-	#var player_scene := load("res://new_player.tscn")
+	#var player_scene := load("res://player.tscn")
+	var player_scene := load("res://new_player.tscn")
 	
 	#Iterate over our connected peer ids
 	var spawn_index = 0
 	
 	for peer_id in players:
+		print("PEER ID: ", peer_id)
 		var player : CharacterBody2D = player_scene.instantiate()
 		
 		#player.synced_position = \
-		player.position = \
-			world.get_node("SpawnPoints").get_child(spawn_index).position
-		
 		player.name = str(peer_id)
 		player.set_player_name(players[peer_id])
 		world.get_node("Players").add_child(player)
+		var target : Vector2 = world.get_node("SpawnPoints").get_child(spawn_index).position
+		print("Target point: ", target)
+		player.position = target
+		print("Player ", peer_id, " global position: ", player.global_position)
 		
 		spawn_index += 1
 	
@@ -219,11 +221,11 @@ func create_enet_client(new_player_name : String, address : String):
 
 #region Utility
 
-func _make_string_unique(name : String) -> String:
+func _make_string_unique(query : String) -> String:
 	var count := 2
-	var trial := name
+	var trial := query
 	if gamestate.players.values().has(trial):
-		trial = name + ' ' + str(count)
+		trial = query + ' ' + str(count)
 		count += 1
 	return trial
 
