@@ -3,13 +3,8 @@ extends AnimationTree
 @export var player : Node2D
 
 var last_position : Vector2 = Vector2.ZERO
-var up : bool = false
-var down : bool = false
-var left : bool = false
-var right : bool = false
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
+func _process(_delta : float):
 	#Get our immediate displacement vector first
 	var motion := player.global_position - last_position
 	last_position = player.global_position

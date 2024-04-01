@@ -2,15 +2,13 @@ class_name NewPlayer
 extends CharacterBody2D
 
 @export var stunned : bool = false
+#@export var peer_id : int = -1
 
 const SPEED = 300.0
 
-func _enter_tree():
-	#I still don't like using the name to keep the peer ID. This should be sync'ed.
-	set_multiplayer_authority(str(name).to_int())
-
-func _ready():
-	set_multiplayer_authority(str(name).to_int())
+@rpc("any_peer", "call_local")
+func set_authority(id : int) -> void:
+	set_multiplayer_authority(id)
 
 func _physics_process(_delta : float):
 	#var spawner = get_node("../../BombSpawner")
@@ -37,7 +35,7 @@ func _physics_process(_delta : float):
 		
 		#Handle bombs
 		if Input.is_action_just_pressed("set_bomb"):
-			drop_bomb.rpc_id(1, [position, str(name).to_int()])
+			drop_bomb.rpc_id(1, [position, multiplayer.get_unique_id()])
 	
 	move_and_slide()
 
@@ -48,6 +46,10 @@ func drop_bomb(data : Array) -> void:
 
 func set_player_name(value : String):
 	$Label.text = value
+
+#@rpc("any_peer", "call_local")
+#func set_peer_id(new_peer_id : int):
+	#self.peer_id = new_peer_id
 
 @rpc("any_peer", "call_local")
 func teleport(new_position : Vector2) -> void:

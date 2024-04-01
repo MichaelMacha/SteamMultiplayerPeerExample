@@ -179,10 +179,10 @@ func begin_game():
 		print("PEER ID: ", peer_id)
 		var player : CharacterBody2D = player_scene.instantiate()
 		
-		#player.synced_position = \
 		player.name = str(peer_id)
 		player.set_player_name(players[peer_id])
 		world.get_node("Players").add_child(player)
+		player.set_authority.rpc(peer_id)
 		var target : Vector2 = world.get_node("SpawnPoints").get_child(spawn_index).position
 		print("Target point: ", target)
 		
