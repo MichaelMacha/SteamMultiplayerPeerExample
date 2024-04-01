@@ -1,7 +1,8 @@
-[gd_scene load_steps=14 format=3 uid="uid://bxeqijng7r6a7"]
+[gd_scene load_steps=27 format=3 uid="uid://bxeqijng7r6a7"]
 
 [ext_resource type="Script" path="res://new_player.gd" id="1_32fh1"]
 [ext_resource type="Texture2D" uid="uid://bsqovikudjr0q" path="res://charwalk.png" id="1_ly81s"]
+[ext_resource type="Script" path="res://MotionTracker.gd" id="3_ghpf1"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_g2wda"]
 radius = 15.0
@@ -182,6 +183,61 @@ _data = {
 "walk up": SubResource("Animation_mhyew")
 }
 
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_me1ep"]
+animation = &"walk up"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_qomn5"]
+animation = &"walk down"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_jvtt2"]
+animation = &"walk left"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_jpmg0"]
+animation = &"walk right"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_nj0al"]
+animation = &"stunned"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_rwggn"]
+animation = &"standing"
+
+[sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_5s7wf"]
+
+[sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_15jjm"]
+
+[sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_u7368"]
+
+[sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_bxlul"]
+
+[sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_1vppo"]
+
+[sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_iy7lw"]
+graph_offset = Vector2(-364.787, 235.528)
+nodes/Animation/node = SubResource("AnimationNodeAnimation_rwggn")
+nodes/Animation/position = Vector2(-240, 260)
+"nodes/Animation 2/node" = SubResource("AnimationNodeAnimation_me1ep")
+"nodes/Animation 2/position" = Vector2(-240, 460)
+"nodes/Animation 3/node" = SubResource("AnimationNodeAnimation_qomn5")
+"nodes/Animation 3/position" = Vector2(-100, 460)
+"nodes/Animation 4/node" = SubResource("AnimationNodeAnimation_jvtt2")
+"nodes/Animation 4/position" = Vector2(40, 460)
+"nodes/Animation 5/node" = SubResource("AnimationNodeAnimation_jpmg0")
+"nodes/Animation 5/position" = Vector2(180, 460)
+"nodes/Animation 6/node" = SubResource("AnimationNodeAnimation_nj0al")
+"nodes/Animation 6/position" = Vector2(320, 460)
+nodes/down/node = SubResource("AnimationNodeBlend2_5s7wf")
+nodes/down/position = Vector2(40, 260)
+nodes/left/node = SubResource("AnimationNodeBlend2_15jjm")
+nodes/left/position = Vector2(180, 260)
+nodes/output/position = Vector2(660, 280)
+nodes/right/node = SubResource("AnimationNodeBlend2_u7368")
+nodes/right/position = Vector2(320, 260)
+nodes/stunned/node = SubResource("AnimationNodeBlend2_bxlul")
+nodes/stunned/position = Vector2(460, 260)
+nodes/up/node = SubResource("AnimationNodeBlend2_1vppo")
+nodes/up/position = Vector2(-100, 260)
+node_connections = [&"down", 0, &"up", &"down", 1, &"Animation 3", &"left", 0, &"down", &"left", 1, &"Animation 4", &"output", 0, &"stunned", &"right", 0, &"left", &"right", 1, &"Animation 5", &"stunned", 0, &"right", &"stunned", 1, &"Animation 6", &"up", 0, &"Animation", &"up", 1, &"Animation 2"]
+
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_kjjo6"]
 properties/0/path = NodePath(".:position")
 properties/0/spawn = true
@@ -189,6 +245,9 @@ properties/0/replication_mode = 1
 properties/1/path = NodePath("Label:text")
 properties/1/spawn = true
 properties/1/replication_mode = 1
+properties/2/path = NodePath("AnimationPlayer:current_animation")
+properties/2/spawn = true
+properties/2/replication_mode = 2
 
 [sub_resource type="LabelSettings" id="LabelSettings_3kxd6"]
 outline_size = 8
@@ -212,6 +271,20 @@ shape = SubResource("CircleShape2D_g2wda")
 libraries = {
 "": SubResource("AnimationLibrary_o1yrk")
 }
+
+[node name="AnimationTree" type="AnimationTree" parent="." node_paths=PackedStringArray("player")]
+libraries = {
+"": SubResource("AnimationLibrary_o1yrk")
+}
+tree_root = SubResource("AnimationNodeBlendTree_iy7lw")
+anim_player = NodePath("../AnimationPlayer")
+parameters/down/blend_amount = 0
+parameters/left/blend_amount = 0
+parameters/right/blend_amount = 0
+parameters/stunned/blend_amount = 0
+parameters/up/blend_amount = 0.0
+script = ExtResource("3_ghpf1")
+player = NodePath("..")
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_kjjo6")

@@ -185,7 +185,13 @@ func begin_game():
 		world.get_node("Players").add_child(player)
 		var target : Vector2 = world.get_node("SpawnPoints").get_child(spawn_index).position
 		print("Target point: ", target)
-		player.position = target
+		
+		#TODO: Remove this check when we're done with Player
+		if player is Player:
+			player.position = target
+		elif player is NewPlayer:
+			player.teleport.rpc_id(peer_id, target)
+		
 		print("Player ", peer_id, " global position: ", player.global_position)
 		
 		spawn_index += 1

@@ -1,3 +1,4 @@
+class_name Player
 extends CharacterBody2D
 
 const MOTION_SPEED = 180.0

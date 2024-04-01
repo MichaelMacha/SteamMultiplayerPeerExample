@@ -1,3 +1,4 @@
+class_name NewPlayer
 extends CharacterBody2D
 
 @export var stunned : bool = false
@@ -20,6 +21,7 @@ func _physics_process(_delta : float):
 	# This is a mistake. We want to check for input on the client
 	# side, but do velocity and updates on the host.
 	#if str(multiplayer.get_unique_id()) == str(name):
+	
 	if is_multiplayer_authority():
 		# Get the input direction and handle the movement/deceleration.
 		if stunned:
@@ -37,8 +39,6 @@ func _physics_process(_delta : float):
 		if Input.is_action_just_pressed("set_bomb"):
 			drop_bomb.rpc_id(1, [position, str(name).to_int()])
 	
-	_handle_animation()
-	
 	move_and_slide()
 
 @rpc("any_peer", "call_local")
@@ -46,24 +46,12 @@ func drop_bomb(data : Array) -> void:
 	var spawner = get_node("../../BombSpawner")
 	spawner.spawn(data)
 
-func _handle_animation():
-	var player : AnimationPlayer = $AnimationPlayer
-	if not stunned:
-		if velocity.x > 0.0:
-			player.play("walk right")
-		elif velocity.x < 0.0:
-			player.play("walk left")
-		elif velocity.y > 0.0:
-			player.play("walk down")
-		elif velocity.y < 0.0:
-			player.play("walk up")
-		else:
-			player.play("standing")
-	elif $AnimationPlayer.current_animation != "stunned":
-		player.play("stunned")
-	
 func set_player_name(value : String):
 	$Label.text = value
+
+@rpc("any_peer", "call_local")
+func teleport(new_position : Vector2) -> void:
+	self.position = new_position
 
 @rpc("any_peer", "call_local")
 func exploded(_by_who):
