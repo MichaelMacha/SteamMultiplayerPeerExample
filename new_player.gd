@@ -59,4 +59,5 @@ func exploded(_by_who):
 	
 	#Otherwise, stun us
 	stunned = true
-	$AnimationPlayer.play("stunned")
+	await $AnimationPlayer.animation_finished
+	stunned = false

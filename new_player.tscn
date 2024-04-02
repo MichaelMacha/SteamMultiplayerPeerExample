@@ -66,7 +66,6 @@ tracks/0/keys = {
 [sub_resource type="Animation" id="Animation_7cg73"]
 resource_name = "stunned"
 length = 1.2
-loop_mode = 2
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -195,7 +194,7 @@ animation = &"walk left"
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_jpmg0"]
 animation = &"walk right"
 
-[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_nj0al"]
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_8fhcv"]
 animation = &"stunned"
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_rwggn"]
@@ -207,12 +206,12 @@ animation = &"standing"
 
 [sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_u7368"]
 
-[sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_bxlul"]
+[sub_resource type="AnimationNodeOneShot" id="AnimationNodeOneShot_g0olc"]
 
 [sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_1vppo"]
 
 [sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_iy7lw"]
-graph_offset = Vector2(-364.787, 235.528)
+graph_offset = Vector2(-261.903, 174.127)
 nodes/Animation/node = SubResource("AnimationNodeAnimation_rwggn")
 nodes/Animation/position = Vector2(-240, 260)
 "nodes/Animation 2/node" = SubResource("AnimationNodeAnimation_me1ep")
@@ -223,7 +222,7 @@ nodes/Animation/position = Vector2(-240, 260)
 "nodes/Animation 4/position" = Vector2(40, 460)
 "nodes/Animation 5/node" = SubResource("AnimationNodeAnimation_jpmg0")
 "nodes/Animation 5/position" = Vector2(180, 460)
-"nodes/Animation 6/node" = SubResource("AnimationNodeAnimation_nj0al")
+"nodes/Animation 6/node" = SubResource("AnimationNodeAnimation_8fhcv")
 "nodes/Animation 6/position" = Vector2(320, 460)
 nodes/down/node = SubResource("AnimationNodeBlend2_5s7wf")
 nodes/down/position = Vector2(40, 260)
@@ -232,8 +231,8 @@ nodes/left/position = Vector2(180, 260)
 nodes/output/position = Vector2(660, 280)
 nodes/right/node = SubResource("AnimationNodeBlend2_u7368")
 nodes/right/position = Vector2(320, 260)
-nodes/stunned/node = SubResource("AnimationNodeBlend2_bxlul")
-nodes/stunned/position = Vector2(460, 260)
+nodes/stunned/node = SubResource("AnimationNodeOneShot_g0olc")
+nodes/stunned/position = Vector2(480, 260)
 nodes/up/node = SubResource("AnimationNodeBlend2_1vppo")
 nodes/up/position = Vector2(-100, 260)
 node_connections = [&"down", 0, &"up", &"down", 1, &"Animation 3", &"left", 0, &"down", &"left", 1, &"Animation 4", &"output", 0, &"stunned", &"right", 0, &"left", &"right", 1, &"Animation 5", &"stunned", 0, &"right", &"stunned", 1, &"Animation 6", &"up", 0, &"Animation", &"up", 1, &"Animation 2"]
@@ -254,6 +253,7 @@ outline_color = Color(0, 0, 0, 1)
 script = ExtResource("1_32fh1")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+z_index = 1
 position = Vector2(7.59959e-07, -2)
 rotation = -6.28319
 texture = ExtResource("1_ly81s")
@@ -278,7 +278,9 @@ anim_player = NodePath("../AnimationPlayer")
 parameters/down/blend_amount = 0
 parameters/left/blend_amount = 0
 parameters/right/blend_amount = 0
-parameters/stunned/blend_amount = 0
+parameters/stunned/active = false
+parameters/stunned/internal_active = false
+parameters/stunned/request = 0
 parameters/up/blend_amount = 0.0
 script = ExtResource("3_ghpf1")
 player = NodePath("..")
