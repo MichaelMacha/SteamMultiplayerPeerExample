@@ -10,7 +10,7 @@ const MAX_PEERS = 12
 
 var peer : MultiplayerPeer = null
 
-# Name for my player.
+# Name for local player.
 var player_name : String
 
 # Names for remote players in id:name format.
@@ -72,7 +72,7 @@ func _ready():
 			lobby_id = new_lobby_id
 			var id = Steam.getLobbyOwner(new_lobby_id)
 			if id != Steam.getSteamID():
-				connect_socket(id)
+				connect_steam_socket(id)
 				register_player.rpc(player_name)
 				players[multiplayer.get_unique_id()] = player_name
 		else:
@@ -107,7 +107,7 @@ func _ready():
 				#lobby_id = new_lobby_id
 				Steam.setLobbyData(new_lobby_id, "name", 
 					str(Steam.getPersonaName(), "'s Spectabulous Test Server"))
-				create_socket()
+				create_steam_socket()
 			else:
 				game_error.emit("Error on create lobby!")
 	)
@@ -161,7 +161,6 @@ func begin_game():
 	
 	#grab the world node and player scene
 	var world : Node2D = get_tree().get_root().get_node("World")
-	#var player_scene := load("res://player.tscn")
 	var player_scene := load("res://new_player.tscn")
 	
 	#Iterate over our connected peer ids
@@ -175,34 +174,37 @@ func begin_game():
 		# "true" forces a readable name, which is important, as we can't have sibling nodes
 		# with the same name.
 		world.get_node("Players").add_child(player, true)
+		
+		#Set the authorization for the player. This has to be called on all peers to stay in sync.
 		player.set_authority.rpc(peer_id)
+		
+		#Grab our location for the player.
 		var target : Vector2 = world.get_node("SpawnPoints").get_child(spawn_index).position
-		print("Target point: ", target)
 		
-		#TODO: Remove this check when we're done with Player
-		if player is Player:
-			player.position = target
-		elif player is NewPlayer:
-			player.teleport.rpc_id(peer_id, target)
-		
-		print("Player ", peer_id, " global position: ", player.global_position)
+		#The peer has authority over the player's position, so to sync it properly,
+		#we need to set that position from that peer with an RPC.
+		player.teleport.rpc_id(peer_id, target)
 		
 		spawn_index += 1
 	
-# create_socket and connect_socket both create the multiplayer peer, instead
+# create_steam_socket and connect_steam_socket both create the multiplayer peer, instead
 # of _ready, for the sake of compatibility with other networking services
 # such as WebSocket, WebRTC, or Steam or Epic.
 
-func create_socket():
+#region Steam Peer Management
+func create_steam_socket():
 	peer = SteamMultiplayerPeer.new()
 	peer.create_host(0, [])
 	multiplayer.set_multiplayer_peer(peer)
 
-func connect_socket(steam_id : int):
+func connect_steam_socket(steam_id : int):
 	peer = SteamMultiplayerPeer.new()
 	peer.create_client(steam_id, 0, [])
 	multiplayer.set_multiplayer_peer(peer)
 
+#endregion
+
+#region ENet Peer Management
 func create_enet_host(new_player_name : String):
 	peer = ENetMultiplayerPeer.new()
 	(peer as ENetMultiplayerPeer).create_server(DEFAULT_PORT)
@@ -217,6 +219,8 @@ func create_enet_client(new_player_name : String, address : String):
 	await multiplayer.connected_to_server
 	register_player.rpc(new_player_name)
 	players[multiplayer.get_unique_id()] = new_player_name
+
+#endregion
 
 #region Utility
 

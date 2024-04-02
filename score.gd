@@ -1,5 +1,7 @@
 extends HBoxContainer
 
+#BUG: Identical names lead to the wrong player getting points.
+
 var player_labels = {} # id : int to {name, label}
 
 func _process(_delta):

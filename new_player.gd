@@ -2,7 +2,6 @@ class_name NewPlayer
 extends CharacterBody2D
 
 @export var stunned : bool = false
-#@export var peer_id : int = -1
 
 const SPEED = 300.0
 
@@ -11,15 +10,6 @@ func set_authority(id : int) -> void:
 	set_multiplayer_authority(id)
 
 func _physics_process(_delta : float):
-	#var spawner = get_node("../../BombSpawner")
-	#TODO: This could still be better— it's two string conversions
-	# per physics update. It might be better to store the peer ID
-	# in a local, synchronized field.
-	
-	# This is a mistake. We want to check for input on the client
-	# side, but do velocity and updates on the host.
-	#if str(multiplayer.get_unique_id()) == str(name):
-	
 	if is_multiplayer_authority():
 		# Get the input direction and handle the movement/deceleration.
 		if stunned:
