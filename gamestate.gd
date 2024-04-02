@@ -128,11 +128,6 @@ func unregister_player(id):
 	player_list_changed.emit()
 	
 
-#@rpc("call_local", "any_peer")
-#func add_player(id : int, player_name : String):
-	#players[id] = player_name
-	##$"/root/World/Score".add_player(id, player_name)
-
 @rpc("call_local")
 func load_world():
 	# Change scene.
@@ -156,9 +151,6 @@ func join_lobby(new_lobby_id : int, new_player_name : String):
 
 #endregion
 
-#func get_player_name():
-	#return player_name
-
 func begin_game():
 	#Ensure that this is only running on the server; if it isn't, we need
 	#to check our code.
@@ -179,9 +171,10 @@ func begin_game():
 		print("PEER ID: ", peer_id)
 		var player : CharacterBody2D = player_scene.instantiate()
 		
-		player.name = str(peer_id)
 		player.set_player_name(players[peer_id])
-		world.get_node("Players").add_child(player)
+		# "true" forces a readable name, which is important, as we can't have sibling nodes
+		# with the same name.
+		world.get_node("Players").add_child(player, true)
 		player.set_authority.rpc(peer_id)
 		var target : Vector2 = world.get_node("SpawnPoints").get_child(spawn_index).position
 		print("Target point: ", target)

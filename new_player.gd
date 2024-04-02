@@ -47,10 +47,6 @@ func drop_bomb(data : Array) -> void:
 func set_player_name(value : String):
 	$Label.text = value
 
-#@rpc("any_peer", "call_local")
-#func set_peer_id(new_peer_id : int):
-	#self.peer_id = new_peer_id
-
 @rpc("any_peer", "call_local")
 func teleport(new_position : Vector2) -> void:
 	self.position = new_position
